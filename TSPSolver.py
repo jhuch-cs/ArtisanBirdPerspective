@@ -305,29 +305,29 @@ class TSPSolver:
 		total_cost += cities[individual[-1]].costTo(cities[individual[0]])
 		return total_cost
 
-	def select(self, fitness_ranked_population, number_of_thirsty_individuals):
-		ysa_ward = []
+	def select(self, population, numParents):
+		breedingPopulation = []
 
-		while number_of_thirsty_individuals > 0:
-			random_index = random.randint(0, len(fitness_ranked_population) - 1)
-			selected_individual = fitness_ranked_population[random_index]
-			del fitness_ranked_population[random_index]
-			ysa_ward.append(selected_individual)
-			number_of_thirsty_individuals -= 1
+		while numParents > 0:
+			random_index = random.randint(0, len(population) - 1)
+			selected_individual = population[random_index]
+			del population[random_index]
+			breedingPopulation.append(selected_individual)
+			numParents -= 1
 
 		list_of_couples = []
 
-		while len(ysa_ward) > 0:
+		while len(breedingPopulation) > 0:
 			couple = []
-			if len(ysa_ward) == 1:
-				couple.append(ysa_ward[0])
-				couple.append(ysa_ward[0])
-				del ysa_ward[0]
+			if len(breedingPopulation) == 1:
+				couple.append(breedingPopulation[0])
+				couple.append(breedingPopulation[0])
+				del breedingPopulation[0]
 			else:
-				couple.append(ysa_ward[0])
-				del ysa_ward[0]
-				couple.append(ysa_ward[0])
-				del ysa_ward[0]
+				couple.append(breedingPopulation[0])
+				del breedingPopulation[0]
+				couple.append(breedingPopulation[0])
+				del breedingPopulation[0]
 
 			list_of_couples.append(couple)
 
