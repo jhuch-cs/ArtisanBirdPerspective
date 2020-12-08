@@ -18,6 +18,7 @@ import signal
 from random import shuffle
 from random import randint
 from random import choice
+from random import randrange
 from math import ceil
 
 
@@ -249,7 +250,7 @@ class TSPSolver:
 		return TSPSolution([cities[index] for index in individual])
 
 	def highestFitness(self, population):
-		return self.fitness(population)[0]
+		return (population[0], self.individualFitness(population[0]))
 
 	def survive(self, population, children):
 		PERCENT_CULLED = 0.3
@@ -267,23 +268,20 @@ class TSPSolver:
 		for i in range(numToCull):
 			section = choice(self.weightedOdds)
 			if section == '4':
-				index = randint(int(len(population) * 0.75), len(population) - 1)
+				index = randint(int(len(population) * 0.8), len(population) - 1)
 			elif section == '3':
-				index = randint(int(len(population) / 2), int(len(population) * 0.75))
+				index = randint(int(len(population) * 0.6), int(len(population) * 0.8))
 			elif section == '2':
-				index = randint(int(len(population) * 0.25), int(len(population) / 2))
+				index = randint(int(len(population) * 0.4), int(len(population) * 0.6))
 			else:
-				index = randint(0, int(len(population) * 0.25))
-				if index == 0:
-					fitness = self.individualFitness(population[index])
-					if fitness < self.bssf[1]:
-						self.bssf = (population[0], fitness)
-			del population[index]
+				index = randint(int(len(population) * 0.2), int(len(population) * 0.4))
 
-	def randomPermutation(self, individual):
-		listCopy = individual.copy()
-		shuffle(listCopy)
-		return listCopy
+				# index = randint(0, int(len(population) * 0.25))
+				# if index == 0:
+				# 	fitness = self.individualFitness(population[index])
+				# 	if fitness < self.bssf[1]:
+				# 		self.bssf = (population[0], fitness)
+			del population[index]
 	
 	def fitness(self, population):
 		cities = self.cities
@@ -295,7 +293,8 @@ class TSPSolver:
 			total_cost += cities[individual[-1]].costTo(cities[individual[0]])
 			final_info = (individual, total_cost)
 			tuple_info.append(final_info)
-		return sorted(tuple_info, key=lambda x: x[1])
+		tuple_info.sort(key=lambda x: x[1])
+		return tuple_info
 
 	def individualFitness(self, individual):
 		cities = self.cities
@@ -307,38 +306,29 @@ class TSPSolver:
 
 	def select(self, population, numParents):
 		breedingPopulation = []
+		firstQ = int(len(population) * 0.25)
+		secondQ = int(len(population) / 2)
+		thirdQ = int(len(population) * 0.75)
 
-		while numParents > 0:
-			random_index = random.randint(0, len(population) - 1)
-			selected_individual = population[random_index]
-			del population[random_index]
-			breedingPopulation.append(selected_individual)
-			numParents -= 1
+		for i in range(numParents):
+			section = choice(self.weightedOdds)
+			if section == '4': # occurs most frequently
+				index = randint(0, firstQ)
+			elif section == '3':
+				index = randint(firstQ, secondQ)
+			elif section == '2':
+				index = randint(secondQ, thirdQ)	
+			else: # occurs least frequently
+				index = randint(thirdQ, len(population) - 1)
+			breedingPopulation.append(population[index])
 
 		list_of_couples = []
 
-		while len(breedingPopulation) > 0:
-			couple = []
-			if len(breedingPopulation) == 1:
-				couple.append(breedingPopulation[0])
-				couple.append(breedingPopulation[0])
-				del breedingPopulation[0]
-			else:
-				couple.append(breedingPopulation[0])
-				del breedingPopulation[0]
-				couple.append(breedingPopulation[0])
-				del breedingPopulation[0]
-
-			list_of_couples.append(couple)
-
-		'''
-		# return the list of 
-		# couples is a list of lists                             --> Couples = [[Couple1], [Couple2], ... , [CoupleN]]
-		# the sublists contain two tuples                        --> Couple1 = [Parent1 Tuple, Parent2 Tuple]
-		# each tuple consists of a solution and its fitness      --> Parent1 Tuple = (Solution, Fitness)
+		if len(breedingPopulation) % 2 != 0:
+			breedingPopulation.append(breedingPopulation[0])
+		list_of_couples = zip(breedingPopulation[::2], breedingPopulation[1::2])
 
 		# Couples = [[(Solution1, Solution1 Fitness), (Solution2, Solution2 Fitness)] , ... , [(SolutionN-1, SolutionN-1 Fitness), (SolutionN, SolutionN Fitness)]]
-		'''
 		return list_of_couples
 
 	# Swaps two random cities in a given path
@@ -350,18 +340,13 @@ class TSPSolver:
 		index1 = int(random.random() * n)
 		index2 = int(random.random() * n)
 
-		city1 = parent[index1]
-		city2 = parent[index2]
-
-		# Swap the cities in the child route
-		parent[index1] = city2
-		parent[index2] = city1
+		parent[index1], parent[index2] = parent[index2], parent[index1]
 
 	def mutateAll(self, population):
-		mutatationRate = 0.2
-		for child in population:
-			if random.random() < mutatationRate:
-				self.mutate(child)
+		mutatationRate = .3
+		numMutants = ceil(mutatationRate * len(population))
+		for i in range(numMutants):
+			self.mutate(choice(population))
 			
 	# Breeds two routes by taking a subsection of one parent and
 	# appending cities not in that subsection in the order they
