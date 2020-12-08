@@ -180,19 +180,6 @@ class TSPSolver:
 				costMatrix[i][j] = cities[i].costTo(cities[j])
 		return costMatrix
 
-
-
-
-
-
-	''' <summary>
-		This is the entry point for the algorithm you'll write for your group project.
-		</summary>
-		<returns>results dictionary for GUI that contains three ints: cost of best solution, 
-		time spent to find best solution, total number of solutions found during search, the 
-		best solution found.  You may use the other three field however you like.
-		algorithm</returns> 
-	'''
 	def fancy( self,time_allowance=60.0 ):
 		results = {}
 		count = 0
@@ -252,37 +239,6 @@ class TSPSolver:
 	def highestFitness(self, population):
 		return (population[0], self.individualFitness(population[0]))
 
-	def survive(self, population, children):
-		PERCENT_CULLED = 0.3
-		numToCull = ceil((len(population) + len(children)) * PERCENT_CULLED)
-
-		population += children
-
-		population.sort(key=lambda individual: self.individualFitness(individual))
-
-		self.cull(population, numToCull)
-
-		return population
-
-	def cull(self, population, numToCull):
-		for i in range(numToCull):
-			section = choice(self.weightedOdds)
-			if section == '4':
-				index = randint(int(len(population) * 0.8), len(population) - 1)
-			elif section == '3':
-				index = randint(int(len(population) * 0.6), int(len(population) * 0.8))
-			elif section == '2':
-				index = randint(int(len(population) * 0.4), int(len(population) * 0.6))
-			else:
-				index = randint(int(len(population) * 0.2), int(len(population) * 0.4))
-
-				# index = randint(0, int(len(population) * 0.25))
-				# if index == 0:
-				# 	fitness = self.individualFitness(population[index])
-				# 	if fitness < self.bssf[1]:
-				# 		self.bssf = (population[0], fitness)
-			del population[index]
-	
 	def fitness(self, population):
 		cities = self.cities
 		tuple_info = []
@@ -331,23 +287,6 @@ class TSPSolver:
 		# Couples = [[(Solution1, Solution1 Fitness), (Solution2, Solution2 Fitness)] , ... , [(SolutionN-1, SolutionN-1 Fitness), (SolutionN, SolutionN Fitness)]]
 		return list_of_couples
 
-	# Swaps two random cities in a given path
-	# This is O(n), because it requires building a child path
-	def mutate(self, parent):
-		n = len(parent)
-
-		# Get cities to swap
-		index1 = int(random.random() * n)
-		index2 = int(random.random() * n)
-
-		parent[index1], parent[index2] = parent[index2], parent[index1]
-
-	def mutateAll(self, population):
-		mutatationRate = .3
-		numMutants = ceil(mutatationRate * len(population))
-		for i in range(numMutants):
-			self.mutate(choice(population))
-			
 	# Breeds two routes by taking a subsection of one parent and
 	# appending cities not in that subsection in the order they
 	# appear in the second parent
@@ -376,4 +315,44 @@ class TSPSolver:
 
 		return childRoute
 
+	# Swaps two random cities in a given path
+	# This is O(n), because it requires building a child path
+	def mutate(self, parent):
+		n = len(parent)
 
+		# Get cities to swap
+		index1 = int(random.random() * n)
+		index2 = int(random.random() * n)
+
+		parent[index1], parent[index2] = parent[index2], parent[index1]
+
+	def mutateAll(self, population):
+		mutatationRate = .3
+		numMutants = ceil(mutatationRate * len(population))
+		for i in range(numMutants):
+			self.mutate(choice(population))
+
+	def survive(self, population, children):
+		PERCENT_CULLED = 0.3
+		numToCull = ceil((len(population) + len(children)) * PERCENT_CULLED)
+
+		population += children
+
+		population.sort(key=lambda individual: self.individualFitness(individual))
+
+		self.cull(population, numToCull)
+
+		return population
+
+	def cull(self, population, numToCull):
+		for i in range(numToCull):
+			section = choice(self.weightedOdds)
+			if section == '4':
+				index = randint(int(len(population) * 0.8), len(population) - 1)
+			elif section == '3':
+				index = randint(int(len(population) * 0.6), int(len(population) * 0.8))
+			elif section == '2':
+				index = randint(int(len(population) * 0.4), int(len(population) * 0.6))
+			else:
+				index = randint(int(len(population) * 0.2), int(len(population) * 0.4))
+			del population[index]
