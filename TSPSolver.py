@@ -268,17 +268,19 @@ class TSPSolver:
 		for i in range(numToCull):
 			section = choice(self.weightedOdds)
 			if section == '4':
-				index = randint(int(len(population) * 0.75), len(population) - 1)
+				index = randint(int(len(population) * 0.8), len(population) - 1)
 			elif section == '3':
-				index = randint(int(len(population) / 2), int(len(population) * 0.75))
+				index = randint(int(len(population) * 0.6), int(len(population) * 0.8))
 			elif section == '2':
-				index = randint(int(len(population) * 0.25), int(len(population) / 2))
+				index = randint(int(len(population) * 0.4), int(len(population) * 0.6))
 			else:
-				index = randint(0, int(len(population) * 0.25))
-				if index == 0:
-					fitness = self.individualFitness(population[index])
-					if fitness < self.bssf[1]:
-						self.bssf = (population[0], fitness)
+				index = randint(int(len(population) * 0.2), int(len(population) * 0.4))
+
+				# index = randint(0, int(len(population) * 0.25))
+				# if index == 0:
+				# 	fitness = self.individualFitness(population[index])
+				# 	if fitness < self.bssf[1]:
+				# 		self.bssf = (population[0], fitness)
 			del population[index]
 	
 	def fitness(self, population):
